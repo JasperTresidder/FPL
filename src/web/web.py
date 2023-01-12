@@ -1,3 +1,4 @@
+
 from http.server import BaseHTTPRequestHandler
 class MyServer(BaseHTTPRequestHandler):
     @classmethod
@@ -7,29 +8,16 @@ class MyServer(BaseHTTPRequestHandler):
         self.User.login('jasper.tres9@gmail.com', 'U*4E#AqHanC7%tR', team_code)
 
     def do_GET(self):
-        url_line = self.path.split('/')
-        team_id_code = 0
-        team_gw = 0
         try:
-            self.User.login('jasper.tres9@gmail.com', 'U*4E#AqHanC7%tR', int(url_line[1]))
-            team_id_code = int(url_line[1])
+            self.User.login('jasper.tres9@gmail.com', 'U*4E#AqHanC7%tR', int(self.path[1:]))
         except:
             self.User.login('jasper.tres9@gmail.com', 'U*4E#AqHanC7%tR', 6574078)
-            team_id_code = 6574078
-        try:
-            team = self.User.get_team(url_line[2])
-            points = self.User.get_points(url_line[2])
-            team_gw = url_line[2]
-        except:
-            team = self.User.get_team(self.User.get_gameweek())
-            points = self.User.get_points(self.User.get_gameweek())
-            team_gw = self.User.get_gameweek()
+        team = self.User.get_team()
+        points = self.User.get_points()
         self.send_response(200)
         self.send_header("Content-type", "text/html")
         self.end_headers()
         self.wfile.write(bytes("<html><head><title>FPL</title><style>h1 {color: red; text-align: center;}"
-                               " a1 {text-align: center;}"
-                               " h2 {color: blue; text-align: center;}"
                                " body {background-color: #fefbd8;}"
                                " p1 {color: blue;}"
                                " p2 {color: white;}"
@@ -44,11 +32,7 @@ class MyServer(BaseHTTPRequestHandler):
                                " th {font-size: 30px; width: 300px;}"
                                "</style></head>", "utf-8"))
         self.wfile.write(bytes("<body>", "utf-8"))
-        self.wfile.write(bytes("<h1>FPL Points Live</h1>", "utf-8"))
-        self.wfile.write(bytes("<h2>GameWeek " + str(team_gw) +"</h2>", "utf-8"))
-        self.wfile.write(bytes("<center><a href='/" + str(team_id_code) + "/" + str(int(team_gw) -1) + "'>Prev</a>", "utf-8"))
-        self.wfile.write((bytes("<p>                             </p>", "utf-8")))
-        self.wfile.write(bytes("<a href='/" + str(team_id_code) + "/" + str(int(team_gw) + 1) + "'>Next</a></center>", "utf-8"))
+        self.wfile.write(bytes("<h1>FPL Points Live</h1><br>", "utf-8"))
         self.wfile.write(bytes("<table><tr>"
                                "<th id='green'>Player</th>"
                                "<th id='green'>Team</th>"

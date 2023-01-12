@@ -1,3 +1,5 @@
+
+
 import requests
 import json
 import pandas as pd
@@ -76,9 +78,9 @@ class FPL:
         res = self.session.post(url, data=data, headers=headers)
         print('login code: ' + str(res.status_code))
 
-    def get_team(self, gw):
-        #gameweek = self.get_gameweek()
-        team_url = "https://fantasy.premierleague.com/api/entry/" + str(self.team_id) + "/event/" + str(gw) + "/picks/"
+    def get_team(self):
+        gameweek = self.get_gameweek()
+        team_url = "https://fantasy.premierleague.com/api/entry/" + str(self.team_id) + "/event/" + gameweek + "/picks/"
         res = self.session.get(team_url)
         manager_data = json.loads(res.content)
         self.team_ = [dict(i) for i in manager_data['picks']]
@@ -88,13 +90,13 @@ class FPL:
             self.team_elements.append(int(element['element']))
             for i in self.players:
                 if i.id == element['element']:
-                    self.team[str(self.get_player_name(element['element']))] = [self.get_element_points(int(element['element']), gw), i.team_code, i.photo]
+                    self.team[str(self.get_player_name(element['element']))] = [self.get_element_points(int(element['element'])), i.team_code, i.photo]
         return self.team
 
 
-    def get_element_points(self, id: int, gw):
+    def get_element_points(self, id: int):
         response = self.session.get(
-            "https://fantasy.premierleague.com/api/event/" + str(gw) + "/live/")
+            "https://fantasy.premierleague.com/api/event/" + str(self.get_gameweek()) + "/live/")
         if response.status_code != 200:
             raise Exception("Response was code " + str(response.status_code))
         responseStr = response.text
@@ -105,12 +107,12 @@ class FPL:
                     temp = json_normalize(row.elements)
                     #hi = temp['stats.minutes']
                     #print('hi')
-                    return [int(temp['stats.total_points']), temp['stats.minutes'][0], temp['stats.goals_scored'][0], temp['stats.assists'][0], temp['stats.bps'][0], temp['stats.clean_sheets'][0], 'Benched' if k['multiplier'] == 0 else 'Active']
+                    return [k['multiplier'] * int(temp['stats.total_points']), temp['stats.minutes'][0], temp['stats.goals_scored'][0], temp['stats.assists'][0], temp['stats.bps'][0], temp['stats.clean_sheets'][0], 'Benched' if k['multiplier'] == 0 else 'Active']
         return 0
 
-    def get_points(self, gw):
+    def get_points(self):
         points = 0
-        response = self.session.get("https://fantasy.premierleague.com/api/event/" + str(gw) + "/live/")
+        response = self.session.get("https://fantasy.premierleague.com/api/event/" + str(self.get_gameweek()) + "/live/")
         if response.status_code != 200:
             raise Exception("Response was code " + str(response.status_code))
         responseStr = response.text
